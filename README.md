@@ -9,77 +9,55 @@ npm install pomelo-logger
 ```
 
 ## Features
-### log prefix
-besides category, you can output prefix as you like in your log  
-prefix can be filename, serverId, serverType, host etc  
-to use this feature, you just pass prefix params to getLogger function  
-```
-var logger = require('pomelo-logger').getLogger(category, prefix1, prefix2, ...);
-```
- log output msg will output with prefix ahead   
+You can configure multiple log layouts available through the log4js features. The example below contains some of the different appenders that can be used (official documentation and more examples [here](https://log4js-node.github.io/log4js-node/layouts.html)).
 
-### get line number in debug
-when in debug environment, you may want to get the line number of the log  
-to use this feature, add this code   
-```
-process.env.LOGGER_LINE = true;
-```
+> Note that some log info (as `lineNumber` and `callStack`) are only available with the flag `enableCallStack` enabled (see [log4js api doc](https://log4js-node.github.io/log4js-node/api.html)).
 
-in pomelo, you just configure the log4js file and set **lineDebug** for true  
-```
+```json
 {
-  "appenders": [
-  ],
-
-  "levels": {
-  }, 
-
-  "replaceConsole": true,
-
-  "lineDebug": true
+  "appenders": {
+    "jsonFile": {
+      "type": "file",
+      "filename": "json-logs.log",
+      "layout": { "type": "json", "separator": ",", "callStackLevel": "info" }
+    },
+    "jsonConsole": {
+      "type": "stdout",
+      "layout": { "type": "json", "separator": ",", "callStackLevel": "error" }
+    },
+    "consolePattern": {
+      "type": "stdout",
+      "layout": { "type": "pattern", "pattern": "%d %p %c %m%n" }
+    },
+    "basic": { "type": "stdout", "layout": { "type": "basic" } },
+    "colored": { "type": "stdout", "layout": { "type": "colored" } }
+  },
+  "categories": {
+    "analytics-debug": {
+      "appenders": ["out"],
+      "level": "debug"
+    },
+    "pomelo": {
+      "appenders": ["jsonConsole"],
+      "level": "info",
+      "enableCallStack": true
+    },
+    "metagame": {
+      "appenders": ["out", "jsonFile"],
+      "level": "info",
+      "enableCallStack": true
+    },
+    "externalProc": {
+      "appenders": ["out"],
+      "level": "debug"
+    },
+    "default": {
+      "appenders": ["out"],
+      "level": "debug"
+    }
+  }
 }
-```
 
-### log raw messages
-in raw message mode, your log message will be simply your messages, no prefix and color format strings  
-to use this feature, add this code  
-```
-process.env.RAW_MESSAGE = true;
-```
-
-in pomelo, you just configure the log4js file and set **rawMessage** for true  
-```
-{
-  "appenders": [
-  ],
-
-  "levels": {
-  }, 
-
-  "replaceConsole": true,
-
-  "rawMessage": true
-}
-```
-
-### dynamic configure logger level
-in pomelo logger configuration file log4js.json, you can add reloadSecs option. The reloadSecs means reload logger configuration file every given time. For example
-```
-{
-	"reloadSecs": 30
-}
-```
-the above configuration means reload the configuration file every 30 seconds. You can dynamic change the logger level, but it does not support dynamiclly changing configuration of appenders.
-
-## Example
-log.js
-```
-var logger = require('pomelo-logger').getLogger('log', __filename, process.pid);
-
-process.env.LOGGER_LINE = true;
-logger.info('test1');
-logger.warn('test2');
-logger.error('test3');
 ```
 
 ## License
